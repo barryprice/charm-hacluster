@@ -32,7 +32,7 @@
 #		    constraints check (Boris Wesslowski). Adds fail count 
 #		    threshold ( Zoran Bosnjak & Marko Hrastovec )
 #
-# NOTES: Requires Perl 5.8 or higher & the Perl Module Monitoring::Plugin
+# NOTES: Requires Perl 5.8 or higher & the Perl Module Nagios::Plugin
 #        Nagios user will need sudo acces - suggest adding line below to
 #        sudoers
 #	     nagios  ALL=(ALL) NOPASSWD: /usr/sbin/crm_mon -1 -r -f
@@ -47,7 +47,7 @@
 
 use warnings;
 use strict;
-use Monitoring::Plugin;
+use Nagios::Plugin;
 
 # Lines below may need changing if crm_mon or sudo installed in a
 # different location.
@@ -56,7 +56,7 @@ my $sudo               = '/usr/bin/sudo';
 my $crm_mon            = '/usr/sbin/crm_mon -1 -r -f';
 my $crm_configure_show = '/usr/sbin/crm configure show';
 
-my $np = Monitoring::Plugin->new(
+my $np = Nagios::Plugin->new(
     shortname => 'check_crm',
     version   => '0.7',
     usage     => "Usage: %s <ARGS>\n\t\t--help for help\n",

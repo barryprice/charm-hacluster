@@ -41,7 +41,6 @@ from charmhelpers.core.host import (
     service_stop,
     service_running,
     lsb_release,
-    CompareHostReleases,
 )
 
 from charmhelpers.contrib.network.ip import (
@@ -105,17 +104,18 @@ COROSYNC_CONF_FILES = [
 ]
 
 PACKAGES = ['crmsh', 'corosync', 'pacemaker', 'python-netaddr', 'ipmitool',
-            'libnagios-plugin-perl', 'python3-requests-oauthlib']
+            'libmonitoring-plugin-perl', 'python3-requests-oauthlib']
+
 SUPPORTED_TRANSPORTS = ['udp', 'udpu', 'multicast', 'unicast']
 DEPRECATED_TRANSPORT_VALUES = {"multicast": "udp", "unicast": "udpu"}
 
 
 @hooks.hook('install.real')
 def install():
-    ubuntu_release = lsb_release()['DISTRIB_CODENAME'].lower()
-    if CompareHostReleases(ubuntu_release) >= 'zesty':
-        PACKAGES.remove('libnagios-plugin-perl')
-        PACKAGES.append('libnagios-object-perl')
+    # use libnagios on Trusty, libmonitoring on anything newer
+    if lsb_release()['DISTRIB_CODENAME'].lower() == 'trusty':
+        PACKAGES.remove('libmonitoring-plugin-perl')
+        PACKAGES.append('libnagios-plugin-perl')
     # NOTE(dosaboy): we currently disallow upgrades due to bug #1382842. This
     # should be removed once the pacemaker package is fixed.
     status_set('maintenance', 'Installing apt packages')
@@ -445,8 +445,18 @@ def stop():
 @hooks.hook('nrpe-external-master-relation-joined',
             'nrpe-external-master-relation-changed')
 def update_nrpe_config():
-    scripts_src = os.path.join(os.environ["CHARM_DIR"], "files",
-                               "nrpe")
+    # Trusty uses the older Nagios::Plugin module
+    # Newer releases use Monitoring::Plugin
+    # After Trusty hits EOL in April 2019, the nrpe_for_trusty
+    # directory can be removed, along with this block, and support
+    # in metadata.yaml
+    if lsb_release()['DISTRIB_CODENAME'].lower() == 'trusty':
+        scripts_src = os.path.join(os.environ["CHARM_DIR"], "files",
+                                   "nrpe_for_trusty")
+    else:
+        scripts_src = os.path.join(os.environ["CHARM_DIR"], "files",
+                                   "nrpe")
+
     scripts_dst = "/usr/local/lib/nagios/plugins"
     if not os.path.exists(scripts_dst):
         os.makedirs(scripts_dst)
