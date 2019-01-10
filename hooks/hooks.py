@@ -445,16 +445,7 @@ def stop():
 @hooks.hook('nrpe-external-master-relation-joined',
             'nrpe-external-master-relation-changed')
 def update_nrpe_config():
-    # Trusty uses the older Nagios::Plugin module
-    # Newer releases use Monitoring::Plugin
-    # After Trusty hits EOL in April 2019, the nrpe_for_trusty
-    # directory can be removed, along with this block, and support
-    # in metadata.yaml
-    if lsb_release()['DISTRIB_CODENAME'].lower() == 'trusty':
-        scripts_src = os.path.join(os.environ["CHARM_DIR"], "files",
-                                   "nrpe_for_trusty")
-    else:
-        scripts_src = os.path.join(os.environ["CHARM_DIR"], "files",
+    scripts_src = os.path.join(os.environ["CHARM_DIR"], "files",
                                    "nrpe")
 
     scripts_dst = "/usr/local/lib/nagios/plugins"
